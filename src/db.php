@@ -15,9 +15,9 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    // If connection fails, we might be running locally without docker env vars set properly,
-    // or waiting for DB to start.
-    // For now, die with error.
-    die("Connection failed: " . $e->getMessage());
+    // Si falla la conexión, podríamos estar ejecutando localmente sin las variables de entorno de docker,
+    // o esperando a que la base de datos inicie.
+    // Por ahora, terminar con error.
+    die("Error de conexión: " . $e->getMessage());
 }
 ?>

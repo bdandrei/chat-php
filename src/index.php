@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($recipient) {
                 $stmt = $pdo->prepare("INSERT INTO messages (sender_id, receiver_id, message) VALUES (:sender, :receiver, :message)");
                 if ($stmt->execute(['sender' => $user_id, 'receiver' => $recipient['id'], 'message' => $messageBody])) {
-                    $success = "¡Mensaje enviado correctamente a @$recipientName!";
+                    $success = "Mensaje enviado a @$recipientName";
                 } else {
                     $error = "Fallo al enviar el mensaje.";
                 }
@@ -75,6 +75,8 @@ $messages = $stmt->fetchAll();
 
 // Filtrar Favoritos si es necesario
 $showFavorites = isset($_GET['view']) && $_GET['view'] === 'favorites';
+
+// Si se muestran favoritos, filtrar el array de mensajes
 if ($showFavorites) {
     $messages = array_filter($messages, function ($m) {
         return !empty($m['is_favorite']);
@@ -83,36 +85,31 @@ if ($showFavorites) {
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Premium Chat</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Cerowait Chat</title>
+    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        .unread-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: var(--unread);
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="container" style="max-width: 1000px;">
+    <div class="container">
+
+        <!-- Navbar -->
         <div class="navbar">
-            <div class="logo">PremiumChat</div>
-            <div>
-                <span>Hola, <strong>@<?= htmlspecialchars($username) ?></strong></span>
-                <a href="logout.php" style="margin-left: 1rem; color: var(--secondary);">Cerrar Sesión</a>
+            <div class="logo">
+                <img src="img/logo.png" alt="Cerowait">
+            </div>
+            <div class="user-controls">
+                <span>@<?= htmlspecialchars($username) ?></span>
+                <a href="logout.php" class="logout-link">Salir</a>
             </div>
         </div>
 
+        <!-- Feedback Messages -->
         <?php if ($error): ?>
             <div class="alert alert-error">
                 <?= htmlspecialchars($error) ?>
@@ -124,80 +121,72 @@ if ($showFavorites) {
             </div>
         <?php endif; ?>
 
-        <!-- Send Message Form -->
-        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem;">
-            <h3>Enviar Mensaje</h3>
-            <form method="POST"
-                style="display: grid; grid-template-columns: 1fr 3fr auto; gap: 1rem; align-items: end;">
-                <div>
-                    <label>Para (Usuario)</label>
-                    <input type="text" name="recipient" placeholder="nombre de usuario" required>
+        <!-- Composition Area -->
+        <div class="composition-area">
+            <h3>NUEVO MENSAJE</h3>
+            <form method="POST" class="send-form">
+                <div class="form-group">
+                    <label>PARA</label>
+                    <input type="text" name="recipient" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>MENSAJE</label>
+                    <input type="text" name="message" required autocomplete="off">
                 </div>
                 <div>
-                    <label>Mensaje</label>
-                    <input type="text" name="message" placeholder="Escribe tu mensaje..." required>
-                </div>
-                <div>
-                    <button type="submit" name="send_message">Enviar</button>
+                    <button type="submit" name="send_message" class="btn-primary">ENVIAR</button>
                 </div>
             </form>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3>Buzón de Entrada</h3>
-            <div>
-                <a href="index.php" class="<?= !$showFavorites ? 'active' : '' ?>"
-                    style="margin-right: 1rem; font-weight: bold; color: <?= !$showFavorites ? 'var(--primary)' : 'var(--text-muted)' ?>">Todos</a>
-                <a href="index.php?view=favorites" class="<?= $showFavorites ? 'active' : '' ?>"
-                    style="font-weight: bold; color: <?= $showFavorites ? 'var(--primary)' : 'var(--text-muted)' ?>">Favoritos
-                    ★</a>
-            </div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <a href="index.php?view=all" class="tab <?= !$showFavorites ? 'active' : '' ?>">BUZÓN</a>
+            <a href="index.php?view=favorites" class="tab <?= $showFavorites ? 'active' : '' ?>">FAVORITOS</a>
         </div>
 
+        <!-- Message List -->
         <div class="message-list">
             <?php if (empty($messages)): ?>
-                <p style="text-align: center; color: var(--text-muted);">No hay mensajes.</p>
+                <p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">No hay mensajes.</p>
             <?php else: ?>
                 <?php foreach ($messages as $msg): ?>
                     <div class="message-card <?= $msg['is_read'] ? '' : 'unread' ?>">
                         <div class="message-meta">
-                            <span class="sender-name">@
-                                <?= htmlspecialchars($msg['sender_name']) ?>
-                            </span>
-                            <span>
-                                <?= date('M j, Y h:i A', strtotime($msg['created_at'])) ?>
-                            </span>
+                            <span class="sender-name">@<?= htmlspecialchars($msg['sender_name']) ?></span>
+                            <span><?= date('M j, H:i', strtotime($msg['created_at'])) ?></span>
                         </div>
-                        <p style="margin: 0.5rem 0; font-size: 1.1rem;">
+
+                        <div class="message-content">
                             <?= htmlspecialchars($msg['message']) ?>
-                        </p>
+                        </div>
 
                         <div class="message-actions">
                             <!-- Toggle Read -->
-                            <form method="POST" style="display:inline;">
+                            <form method="POST">
                                 <input type="hidden" name="action" value="toggle_read">
                                 <input type="hidden" name="message_id" value="<?= $msg['id'] ?>">
-                                <button type="submit" class="btn-sm"
+                                <button type="submit" class="btn-icon"
                                     title="<?= $msg['is_read'] ? 'Marcar como No Leído' : 'Marcar como Leído' ?>">
-                                    <?= $msg['is_read'] ? 'Marcar No Leído' : 'Marcar Leído' ?>
+                                    <?= $msg['is_read'] ? 'No leído' : 'Leído' ?>
                                 </button>
                             </form>
 
                             <!-- Favorite -->
-                            <form method="POST" style="display:inline;">
+                            <form method="POST">
                                 <input type="hidden" name="action" value="toggle_favorite">
                                 <input type="hidden" name="message_id" value="<?= $msg['id'] ?>">
-                                <button type="submit" class="btn-sm btn-favorite <?= $msg['is_favorite'] ? 'active' : '' ?>"
-                                    title="Alternar Favorito">
-                                    ★
+                                <button type="submit" class="btn-icon <?= !empty($msg['is_favorite']) ? 'active' : '' ?>"
+                                    title="Favorito">
+                                    <?= !empty($msg['is_favorite']) ? '★' : '☆' ?>
                                 </button>
                             </form>
 
                             <!-- Delete -->
-                            <form method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro?');">
+                            <form method="POST" onsubmit="return confirm('¿Eliminar mensaje?');">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="message_id" value="<?= $msg['id'] ?>">
-                                <button type="submit" class="btn-sm btn-danger">Borrar</button>
+                                <button type="submit" class="btn-icon btn-delete">Eliminar</button>
                             </form>
                         </div>
                     </div>
