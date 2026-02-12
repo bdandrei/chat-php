@@ -1,14 +1,14 @@
-# Práctica Final - Servicio de Mensajería Instantánea
+# Servicio de Mensajería Instantánea
 
-Este proyecto implementa un chat web completo utilizando PHP nativo, MySQL y Docker. Cumple con todos los requisitos de la práctica y añade mejoras significativas de usabilidad y diseño.
+Hemos desarrollado una aplicación web de chat completa utilizando **PHP nativo**, **MySQL** y **Docker**. Nuestro objetivo ha sido crear una plataforma segura, robusta y con un diseño moderno centrado en la usabilidad. El proyecto destaca por su interfaz "Glassmorphism" y una arquitectura limpia que separa la lógica de negocio de la presentación.
 
 ## 🚀 Instrucciones de Instalación y Ejecución
 
-El proyecto está contenerizado para facilitar su despliegue en cualquier máquina Linux.
+El proyecto se encuentra totalmente contenerizado para facilitar su despliegue en cualquier entorno Linux compatible con Docker.
 
 1.  **Requisitos**: Tener instalado `docker` y `docker compose`.
 2.  **Despliegue**:
-    Estando en la carpeta raíz del proyecto, ejecuta:
+    Desde la carpeta raíz del proyecto, ejecutamos el siguiente comando:
     ```bash
     docker compose up -d --build
     ```
@@ -18,58 +18,55 @@ El proyecto está contenerizado para facilitar su despliegue en cualquier máqui
         *   Usuario: `chat_user`
         *   Contraseña: `123`
 
-## 🛠️ Justificación Técnica (Criterios de Evaluación)
+## 🛠️ Características Técnicas y Arquitectura
 
-### 1. Acceso a Base de Datos (1 punto)
-*   **Tecnología**: Se utiliza la librería **PDO** (PHP Data Objects) para todas las conexiones.
-*   **Seguridad**: Uso estricto de **Sentencias Preparadas** (`prepare` / `execute`) para blindar la aplicación contra inyecciones SQL.
-*   **Configuración**: La conexión se realiza mediante variables de entorno definidas en `docker-compose.yml`, permitiendo cambiar credenciales sin tocar el código.
+### Acceso a Datos y Seguridad
+Para la interacción con la base de datos, utilizamos la librería **PDO (PHP Data Objects)**. Esta elección nos permite asegurar la portabilidad y seguridad del acceso a datos.
+*   **Seguridad SQL**: Hemos implementado estrictamente **Sentencias Preparadas** (`prepare` / `execute`) en todas las consultas para blindar la aplicación contra inyecciones SQL.
+*   **Configuración**: La conexión se gestiona mediante variables de entorno en el archivo `docker-compose.yml`, lo que nos permite modificar credenciales sin necesidad de alterar el código fuente.
 
-### 2. Validación de Usuarios (1 punto)
-*   **Registro**: Se validan los datos de entrada en el servidor (backend).
-    *   Nombres de usuario: Solo alfanuméricos.
-    *   Contraseñas: Longitud mínima de 6 caracteres.
-*   **Seguridad**: Las contraseñas **NUNCA** se guardan en texto plano. Se utiliza el algoritmo **Bcrypt** (`password_hash` y `password_verify`) estándar de la industria.
+### Autenticación y Usuarios
+Hemos diseñado un sistema de autenticación robusto:
+*   **Validación**: Realizamos una validación estricta de todos los datos en el servidor (backend), asegurando que los nombres de usuario sean alfanuméricos y las contraseñas cumplan con los requisitos de longitud.
+*   **Encriptación de Contraseñas**: Garantizamos que las contraseñas **NUNCA** se almacenen en texto plano. Utilizamos el algoritmo **Bcrypt** (`password_hash` y `password_verify`), siguiendo los estándares actuales de seguridad.
 
-### 3. Gestión de Sesión (1 punto)
-*   **Mecanismo**: Uso de sesiones nativas de PHP (`session_start`).
-*   **Control**: Se protege el acceso a `index.php`; si no hay sesión activa, redirige automáticamente al login. Al cerrar sesión (`logout.php`), se destruye completamente la sesión y las cookies asociadas.
+### Gestión de Sesiones
+Controlamos el acceso a las áreas privadas mediante sesiones nativas de PHP:
+*   Protegemos el archivo principal (`index.php`) para redirigir al login si no existe una sesión activa.
+*   Al cerrar sesión, nos aseguramos de destruir completamente tanto la sesión en el servidor como las cookies asociadas en el cliente.
 
-### 4. Mejoras de Diferenciación (2 puntos)
-Hemos implementado 4 funcionalidades clave que distinguen este chat:
-1.  **🗑️ Borrado de Mensajes**: El usuario puede eliminar mensajes de su propia bandeja de entrada.
-2.  **� Estado de Lectura**: Diferenciación visual clara. Los mensajes no leídos tienen un borde e indicador de color, que desaparece al marcarlos como leídos.
-3.  **⭐ Favoritos**: Sistema para marcar mensajes importantes. Incluye una vista filtrada ("Favoritos") para ver solo esos mensajes.
-4.  **🎨 Diseño Premium "Glassmorphism"**: Interfaz moderna, oscura y con efectos de transparencia, totalmente responsiva y animada.
+### Experiencia de Usuario y Funcionalidades Extra
+Hemos enriquecido la aplicación con características avanzadas que mejoran significativamente la experiencia de uso:
+1.  **🗑️ Borrado de Mensajes**: Permitimos a los usuarios gestionar su bandeja de entrada eliminando mensajes no deseados.
+2.  **👁️ Estado de Lectura**: Implementamos indicadores visuales claros; los mensajes nuevos destacan visualmente hasta que el usuario los marca como leídos.
+3.  **⭐ Favoritos**: Hemos añadido un sistema para marcar mensajes importantes, incluyendo una vista filtrada exclusiva para acceder rápidamente a ellos.
+4.  **🎨 Diseño Premium**: Hemos creado una interfaz moderna con estética "Glassmorphism", totalmente responsiva y con micro-animaciones que hacen la navegación fluida y agradable.
 
-### 5. Gestión de Errores (1 punto)
-*   **Feedback Visual**: Sistema de "Mensajes Flash". Los errores (login fallido, usuario ocupado) o éxitos (mensaje enviado) se muestran en alertas de colores (verde/rojo) en la parte superior y desaparecen tras ser vistos, informando siempre al usuario del estado de sus acciones.
-
-### 6. Legibilidad y Usabilidad (1 punto)
-*   **Código**: Estructurado limpiamente en archivos separados (`db.php`, `functions.php`, vistas).
-*   **Interfaz**: Intuitiva, con navegación clara entre buzón y favoritos, y acciones rápidas en cada tarjeta de mensaje.
+### Gestión de Errores y Feedback
+Hemos integrado un sistema de "Mensajes Flash" para la gestión de errores y notificaciones. Ya sea un error en el login o una confirmación de envío, el usuario recibe feedback instantáneo mediante alertas visuales (verde/rojo) que no interrumpen el flujo de navegación.
 
 ## 🗂️ Esquema de la Base de Datos
 
-El sistema utiliza una base de datos relacional llamada `cerowait` con tres tablas interconectadas:
+El sistema se apoya en una estructura relacional (base de datos `cerowait`) compuesta por tres tablas normalizadas:
 
 ### Tabla `users`
-Almacena las credenciales de los usuarios.
+Almacena la información de las cuentas de usuario.
 *   `id` (PK): Identificador único.
-*   `username`: Nombre único del usuario.
-*   `password`: Hash cifrado de la contraseña.
-*   `created_at`: Fecha de alta.
+*   `username`: Nombre de usuario (único).
+*   `password`: Hash seguro de la contraseña.
+*   `created_at`: Fecha de registro.
 
 ### Tabla `messages`
-Almacena el contenido y estado de los envíos.
+Contiene el historial de conversaciones.
 *   `id` (PK): Identificador del mensaje.
-*   `sender_id` (FK): Quién lo envió.
-*   `receiver_id` (FK): Quién lo recibe.
-*   `message`: Texto del mensaje.
-*   `is_read`: Estado (0 = No leído, 1 = Leído).
+*   `sender_id` (FK): Usuario remitente.
+*   `receiver_id` (FK): Usuario destinatario.
+*   `message`: Contenido del mensaje.
+*   `is_read`: Estado de lectura (0/1).
+*   `created_at`: Fecha de envío.
 
 ### Tabla `favorites`
-Tabla intermedia para la funcionalidad de favoritos.
+Gestiona la relación de mensajes marcados como favoritos.
 *   `user_id` (FK): Usuario que marca el favorito.
-*   `message_id` (FK): Mensaje marcado.
-*(Clave primaria compuesta por ambos campos para evitar duplicados)*
+*   `message_id` (FK): Mensaje seleccionado.
+*(Clave primaria compuesta para prevenir duplicados)*
